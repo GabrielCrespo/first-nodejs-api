@@ -1,0 +1,27 @@
+{
+  "name": "first-nodejs-api",
+  "version": "1.0.0",
+  "description": "First nodejs API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npx nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GabrielCrespo/first-nodejs-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GabrielCrespo/first-nodejs-api/issues"
+  },
+  "homepage": "https://github.com/GabrielCrespo/first-nodejs-api#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.12"
+  }
+}
