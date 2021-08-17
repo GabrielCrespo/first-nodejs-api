@@ -1,46 +1,70 @@
-const { json } = require("express");
 const express = require("express");
+const { uuid } = require("uuidv4");
 
 const app = express();
 
 app.use(express.json());
 
-const projects = ["Projeto 1", "Projeto 2", "Projeto 3"];
+const projects = [];
 
 app.get("/projects", (request, response) => {
-  const { title, owner } = request.query;
-
-  console.log(title, owner);
-
   return response.json(projects);
 });
 
 app.post("/projects", (request, response) => {
-    const { owner, title, year } = request.body;
+  const { owner, title } = request.body;
 
-    console.log(owner, title, year);
+  const id = uuid();
 
-    projects.push('Projeto 4');
-    return response.json(projects);
+  const project = {
+    id,
+    title,
+    owner,
+  };
+
+  projects.push(project);
+  return response.json(project);
 });
 
-app.put('/projects/:id', (request, response) => {
-    const { id } = request.params;
+app.put("/projects/:id", (request, response) => {
+  const { id } = request.params;
 
-    console.log(id);
+  const { title, owner } = request.body;
+ 
+  const projectIndex = projects.findIndex(project => project.id === id);
 
-    projects[0] = 'Projects 5';
-    return response.json(projects);
-})
+  if(projectIndex < 0){
+      return response.status(400).json({
+          error: "Project not found"
+      })
+  }
 
-app.delete('/projects/:id', (request, response) => {
-    const { id } = request.params;
+  const project = {
+    id,
+    title,
+    owner,
+  }
 
-    console.log(id);
+  projects[projectIndex] = project;
 
-    projects.shift();
-    return response.json(projects);
-})
+  return response.json(project);
+});
+
+app.delete("/projects/:id", (request, response) => {
+  const { id } = request.params;
+
+  const projectIndex = projects.findIndex(project => project.id === id);
+
+  if(projectIndex < 0){
+      return response.status(400).json({
+          error: "Project not found"
+      })
+  }
+
+  projects.splice(projectIndex, 1);
+
+  return response.status(204).json([]);
+});
 
 const port = 3333;
 
