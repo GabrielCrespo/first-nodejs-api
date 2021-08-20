@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npx nodemon src/index.js",
-    "dev": "ts-node-dev --inspect --ignore-watch node_modules src/server.ts"
+    "dev": "ts-node-dev --inspect --ignore-watch node_modules src/server.ts",
+    "knex:migrate": "knex --knexfile src/knexfile.ts migrate:latest",
+    "knex:seed": "knex --knexfile src/knexfile.ts seed:run"  
   },
   "repository": {
     "type": "git",
