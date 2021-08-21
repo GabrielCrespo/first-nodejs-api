@@ -20,10 +20,6 @@ export async function seed(knex: Knex) {
       },
       {
        title: "Baterias e Pilhas",
-       image: "papel.png"
-      },
-      {
-       title: "Papéis e Papelão",
        image: "bateria.png"
       },
       {
