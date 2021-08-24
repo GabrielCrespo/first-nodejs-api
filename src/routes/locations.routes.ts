@@ -1,6 +1,7 @@
 import { json, request, response, Router } from "express";
 import knex from "../database/connection";
 import multer from "multer";
+import { celebrate, Joi } from "celebrate";
 import multerConfig from "../config/multer";
 
 const locationsRouter = Router();
@@ -36,7 +37,7 @@ locationsRouter.get("/", async (request, response) => {
       .split(",")
       .map((item) => Number(item.trim()));
 
-       locations = await knex("locations")
+    locations = await knex("locations")
       .join("location_items", "locations.id", "=", "location_items.location_id")
       .whereIn("location_items.item_id", parsedItems)
       .where("city", String(city))
@@ -50,51 +51,71 @@ locationsRouter.get("/", async (request, response) => {
   return response.json(locations);
 });
 
-locationsRouter.post("/", async (request, response) => {
-  const { name, email, whatsapp, latitude, longitude, city, uf, items } =
-    request.body;
-
-  const location = {
-    image: "fake-image.jpg",
-    name,
-    email,
-    whatsapp,
-    latitude,
-    longitude,
-    city,
-    uf,
-  };
-
-  const transaction = await knex.transaction();
-
-  const newId = await transaction("locations").insert(location);
-  const location_id = newId[0];
-
-  const locationItems = items.map(async (item_id: number) => {
-    const selectedItem = await transaction("items")
-      .where("id", item_id)
-      .first();
-    if (!selectedItem) {
-      return response.status(400).json({
-        message: `Item ${item_id} not found`,
-      });
+locationsRouter.post(
+  "/",
+  celebrate(
+    {
+      body: Joi.object().keys({
+        name: Joi.string().required(),
+        email: Joi.string().required().email(),
+        whatsapp: Joi.string().required(),
+        latitude: Joi.number().required(),
+        longitude: Joi.number().required(),
+        city: Joi.string().required(),
+        uf: Joi.string().required().max(2),
+        items: Joi.string().required(),
+      }),
+    },
+    {
+      abortEarly: false,
     }
+  ),
+  async (request, response) => {
+    const { name, email, whatsapp, latitude, longitude, city, uf, items } =
+      request.body;
 
-    return {
-      item_id,
-      location_id,
+    const location = {
+      image: "fake-image.jpg",
+      name,
+      email,
+      whatsapp,
+      latitude,
+      longitude,
+      city,
+      uf,
     };
-  });
 
-  await transaction("location_items").insert(locationItems);
+    const transaction = await knex.transaction();
 
-  transaction.commit();
+    const newId = await transaction("locations").insert(location);
+    const location_id = newId[0];
 
-  return response.json({
-    location_id,
-    ...location,
-  });
-});
+    const locationItems = items.map(async (item_id: number) => {
+      const selectedItem = await transaction("items")
+        .where("id", item_id)
+        .first();
+      if (!selectedItem) {
+        return response.status(400).json({
+          message: `Item ${item_id} not found`,
+        });
+      }
+
+      return {
+        item_id,
+        location_id,
+      };
+    });
+
+    await transaction("location_items").insert(locationItems);
+
+    transaction.commit();
+
+    return response.json({
+      location_id,
+      ...location,
+    });
+  }
+);
 
 locationsRouter.put(
   "/:id",
